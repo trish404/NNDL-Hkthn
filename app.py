@@ -7,15 +7,15 @@ from io import BytesIO
 MODAL_URL = "https://trish404--style-lora-backend.modal.run/run_backend"
 
 def call_modal(prompt, style):
-    response = requests.post(MODAL_URL, json={"prompt": prompt, "style": style})
-    data = response.json()
+    try:
+        response = requests.post(MODAL_URL, json={"prompt": prompt, "style": style})
+        print("Status Code:", response.status_code)
+        print("Raw Text:", response.text)  # This will appear in Streamlit Cloud logs
+        data = response.json()
+        return Image.open(BytesIO(base64.b64decode(data["image"]))), data["caption"], data["enhanced"]
+    except Exception as e:
+        return None, f"❌ Error from backend: {str(e)}", ""
 
-    if "error" in data:
-        return None, data["error"], ""
-    
-    image_data = base64.b64decode(data["image"])
-    image = Image.open(BytesIO(image_data))
-    return image, data["caption"], data["enhanced"]
 
 st.title("🎨 AI Image Generator with Style LoRA")
 
